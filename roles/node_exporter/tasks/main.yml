@@ -1,0 +1,45 @@
+---
+
+- name: Prepare a store and a configuration folder
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /tmp/node_exporter
+    - /usr/local/bin  
+
+- name: Download node_exporter
+  get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz 
+    dest: /tmp/node_exporter/
+
+- name: Unarchive prometheus
+  unarchive:
+    src: /tmp/node_exporter/node_exporter-0.18.1.linux-amd64.tar.gz
+    dest: /tmp/node_exporter/
+
+- name: Move binaries
+  shell: |
+    mv -f /tmp/node_exporter/node_exporter-0.18.1.linux-amd64/node_exporter /usr/local/bin/
+
+- name: Configure Node_exporter service
+  template: 
+    src: templates/node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+
+- name: Reload systemctl configuration
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start node_exporter
+  systemd:
+    name: node_exporter
+    state: started
+    enabled: yes
+
+- name: Delete temporary folder
+  file:
+    path: /tmp/node_exporter
+    state: absent
+
+...

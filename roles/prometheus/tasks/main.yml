@@ -1,0 +1,82 @@
+---
+
+- name: Ensure group exists
+  group:
+    name: prometheus
+    state: present
+    system: yes
+
+- name: Ensure user exists
+  user:
+    name: prometheus
+    system: yes
+    group: prometheus
+    shell: /sbin/nologin
+
+- name: Prepare a store and a configuration folder
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /etc/prometheus/rules.d 
+    - /etc/prometheus/files_sd
+    - /tmp/prometheus
+    - /var/lib/prometheus
+    - /usr/local/bin  
+
+- name: Download prometheus
+  get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v2.14.0/prometheus-2.14.0.linux-amd64.tar.gz
+    dest: /tmp/prometheus/
+
+- name: Unarchive prometheus
+  unarchive:
+    src: /tmp/prometheus/prometheus-2.14.0.linux-amd64.tar.gz
+    dest: /tmp/prometheus/
+
+- name: Move binaries
+  shell: |
+    mv -f /tmp/prometheus/prometheus-2.14.0.linux-amd64/prometheus /usr/local/bin/ &&
+    mv -f /tmp/prometheus/prometheus-2.14.0.linux-amd64/promtool /usr/local/bin/ && 
+    mv -f /tmp/prometheus/prometheus-2.14.0.linux-amd64/consoles/ /etc/prometheus/ && 
+    mv -f /tmp/prometheus/prometheus-2.14.0.linux-amd64/console_libraries/ /etc/prometheus/ 
+
+- name: Install configuration template
+  template:
+    src: templates/prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+
+- name: Configure Prometheus service
+  template: 
+    src: templates/prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+
+- name: Apply rights on prometheus folder
+  file:
+    path: "{{ item }}"
+    state: directory
+    group: prometheus
+    owner: prometheus
+    mode: '0755'
+    recurse: yes
+  loop:
+    - /etc/prometheus
+    - /tmp/prometheus
+    - /var/lib/prometheus
+
+- name: Reload systemctl configuration
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start prometheus
+  systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+
+- name: Delete temporary folder
+  file:
+    path: /tmp/prometheus
+    state: absent
+
+...

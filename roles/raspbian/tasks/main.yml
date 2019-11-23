@@ -1,0 +1,42 @@
+---
+
+- name: ping des machines
+  ping:
+
+- name: configuration raspi - extend FS
+  command: |
+    raspi-config nonint do_expand_rootfs
+
+- name: configuration raspi - setting hostname
+  command: |
+    raspi-config nonint do_hostname {{ inventory_hostname }}
+
+- name: configuration raspi - setting memory split
+  command: |
+    raspi-config nonint do_memory_split 16
+
+- name: reboot to take raspi-config changes into account    
+  reboot:
+
+- name: update APT cache
+  apt:
+    update_cache: yes
+
+- name: update already installed dependencies
+  apt:
+    upgrade: dist
+
+- name: install dependencies
+  apt:
+    name: "{{ system_packages }}"
+    state: present
+
+- name: autoremove
+  apt:
+    autoremove: true
+
+- name: autoclean
+  apt:
+    autoclean: true
+
+...

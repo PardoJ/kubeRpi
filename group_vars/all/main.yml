@@ -1,0 +1,9 @@
+---
+
+system_packages:
+  - curl
+  - vim
+  - bash-completion
+  - openssh-client
+
+...
