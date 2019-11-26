@@ -1,12 +1,13 @@
-- hosts: localhost
-  become: yes
-  roles:
-    #    - prometheus
+# - hosts: localhost
+#   become: yes
+#   roles:
+    # - prometheus
     #    - grafana
-    - node_exporter
+    # - node_exporter
 
 
 - hosts: all
   become: yes
   roles:
-    - raspbian
+    # - raspbian
+    - node_exporter

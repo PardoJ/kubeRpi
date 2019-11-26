@@ -1,5 +1,18 @@
 ---
 
+- name: Ensure group exists
+  group:
+    name: node_exporter
+    state: present
+    system: yes
+
+- name: Ensure user exists
+  user:
+    name: node_exporter
+    system: yes
+    group: node_exporter
+    shell: /sbin/nologin
+
 - name: Prepare a store and a configuration folder
   file:
     path: "{{ item }}"
@@ -10,17 +23,18 @@
 
 - name: Download node_exporter
   get_url:
-    url: https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz 
+    url: https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-armv7.tar.gz 
     dest: /tmp/node_exporter/
 
-- name: Unarchive prometheus
+- name: Unarchive node_exporter
   unarchive:
-    src: /tmp/node_exporter/node_exporter-0.18.1.linux-amd64.tar.gz
+    src: /tmp/node_exporter/node_exporter-0.18.1.linux-armv7.tar.gz
     dest: /tmp/node_exporter/
+    remote_src: yes
 
 - name: Move binaries
   shell: |
-    mv -f /tmp/node_exporter/node_exporter-0.18.1.linux-amd64/node_exporter /usr/local/bin/
+    mv -f /tmp/node_exporter/node_exporter-0.18.1.linux-armv7/node_exporter /usr/local/bin/
 
 - name: Configure Node_exporter service
   template: 

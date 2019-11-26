@@ -1,0 +1,36 @@
+---
+
+- name: Prepare a store and a configuration folder
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /tmp/grafana
+
+- name: Download node_exporter
+  get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-armv7.tar.gz 
+    dest: /tmp/node_exporter/
+
+- name: Unarchive node_exporter
+  unarchive:
+    src: /tmp/node_exporter/node_exporter-0.18.1.linux-armv7.tar.gz
+    dest: /tmp/node_exporter/
+    remote_src: yes
+
+- name: Reload systemctl configuration
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start node_exporter
+  systemd:
+    name: grafana
+    state: started
+    enabled: yes
+
+- name: Delete temporary folder
+  file:
+    path: /tmp/grafana
+    state: absent
+
+...

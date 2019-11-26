@@ -33,6 +33,7 @@
   unarchive:
     src: /tmp/prometheus/prometheus-2.14.0.linux-amd64.tar.gz
     dest: /tmp/prometheus/
+    remote_src: yes
 
 - name: Move binaries
   shell: |
